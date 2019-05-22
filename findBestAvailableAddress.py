@@ -4,6 +4,9 @@ Created on Fri May 17 08:07:28 2019
 Find best available address/coordinate
 @author: aimin.fan
 """
+# main_with_ini.py
+import configparser
+
 from geopy.geocoders import Nominatim
 from geopy.geocoders import GeoNames
 from geopy.geocoders import Here
@@ -68,7 +71,7 @@ def revGeocodingGeopy(_lat,_lon,geolocator):
         if location:
             #if len(location)>0:
             for lc in location:
-                print(lc)
+                #print(lc)
                 if len(lc)>0:
                     addrDict['address']=lc[0]
                     addrDict['accuracy']=getAccuracy(_lat,_lon,addrDict['address'],gl)
@@ -94,14 +97,23 @@ def getLatLon(addr,geolocator):
             return l[1]
     return None
 def collectGeocoders():
+    config = configparser.ConfigParser()
+    conf=r'c:\projects\conf\config.ini'
+    config.read(conf)
+    keys = {'Here_app_id':config['DEFAULT']['Here_app_id'],
+            'Here_app_code':config['DEFAULT']['Here_app_code'],
+             'TomTom':config['DEFAULT']['TomTom_api_key'], 
+             'OpenMapQuest':config['DEFAULT']['OpenMapQuest_api_key'], 
+             'GoogleV3':config['DEFAULT']['GoogleV3_api_key']
+             }
     locators=[{'locator':Nominatim(user_agent="afan"),'name':'Nominatim','type':'Geopy'},
               {'locator':GeoNames(username="aimfan"),'name':'GeoNames','type':'Geopy'},
-              {'locator':Here(app_id='crWSWbTEdtSHk8z9gf8n', app_code='kIeuGud2FxMyWk_rxn4zLg'),'name':'Here','type':'Geopy'},
-              {'locator':TomTom(api_key='UVZplrrIv0chiLLV7R1E2HPZJdHOH6FZ'),'name':'TomTom','type':'Geopy'},
-              {'locator':OpenMapQuest(api_key='hyIeA4pV5rPpORQzaGcGfckbMHpSnraG'),'name':'OpenMapQuest','type':'Geopy'},
+              {'locator':Here(app_id=keys['Here_app_id'], app_code=keys['Here_app_code']),'name':'Here','type':'Geopy'},
+              {'locator':TomTom(api_key=keys['TomTom']),'name':'TomTom','type':'Geopy'},
+              {'locator':OpenMapQuest(api_key=keys['OpenMapQuest']),'name':'OpenMapQuest','type':'Geopy'},
               {'locator':Photon(),'name':'Photon','type':'Geopy'}
               ]
-    #locators.append({'locator':GoogleV3(api_key='AIzaSyDSQOxaeImKa_gppD48Nt_wsdmqjGnFCmo'),'name':'GoogleV3','type':'Geopy'})
+    #locators.append({'locator':GoogleV3(api_key=keys['GoogleV3']),'name':'GoogleV3','type':'Geopy'})
     locators.append({'locator':revGeocodingbyIQ,'name':'revGeocodingbyIQ','type':'Custom'})
 
     return locators
@@ -172,12 +184,17 @@ def getAllAddress(_lat,_lon):
             print('Geocoder {} Not Implemented!'.format(l['name']))
     return lAddr
 if __name__ == '__main__':
+    
+
+
+    conf=r'c:\projects\conf\config.ini'
     #originaddress='320 Queen St. Chatham ON'
     originaddress='36 Birmingham Ln. Chatham ON'
     b=getBestLocation(originaddress)
     print(b['location'],'\n\n')
-    a=getAllAddress(b['location'][0], b['location'][1])
-#    print(a)
-    for item in a:
-        
-        print(item)
+    a=getBestAddress(b['location'][0], b['location'][1])
+    print(a)
+##    print(a)
+#    for item in a:
+#        
+#        print(item)
