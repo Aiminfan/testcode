@@ -98,7 +98,7 @@ def getLatLon(addr,geolocator):
     return None
 def collectGeocoders():
     config = configparser.ConfigParser()
-    conf=r'c:\projects\conf\config.ini'
+    conf=r'..\conf\config.ini'
     config.read(conf)
     keys = {'Here_app_id':config['DEFAULT']['Here_app_id'],
             'Here_app_code':config['DEFAULT']['Here_app_code'],
@@ -188,8 +188,8 @@ if __name__ == '__main__':
 
 
     conf=r'c:\projects\conf\config.ini'
-    #originaddress='320 Queen St. Chatham ON'
-    originaddress='36 Birmingham Ln. Chatham ON'
+    originaddress='320 Queen St. Chatham ON'
+    #originaddress='36 Birmingham Ln. Chatham ON'
     b=getBestLocation(originaddress)
     print(b['location'],'\n\n')
     a=getBestAddress(b['location'][0], b['location'][1])

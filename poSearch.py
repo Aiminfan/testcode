@@ -4,6 +4,15 @@ Created on Tue May 21 13:27:19 2019
 
 @author: aimin.fan
 """
+from geopy.geocoders import Nominatim
+from geopy.geocoders import GeoNames
+from geopy.geocoders import Here
+from geopy.geocoders import TomTom
+from geopy.geocoders import OpenMapQuest
+from geopy.geocoders import Photon
+from geopy.geocoders import GoogleV3
+from geopy import distance
+
 from pymongo import MongoClient
 import re,json
 import pprint
@@ -27,6 +36,13 @@ def getPostal(address,country='CA'):
         p=r.group().replace(" ", "")
         return p
     return None
+def checkMatchLevel(str1,str2):
+    if len(str1)==len(str2)==6:
+        for i in range(3):
+            if str1[i]!=str2[i]:
+                return i
+    return -1    
+            
 if __name__ == '__main__':
     client = MongoClient()
     db = client['dbGIS']
@@ -34,7 +50,15 @@ if __name__ == '__main__':
     ptAddr=collection.find_one()
     pprint.pprint(ptAddr)
     addr=ptAddr['attributes']['ADDRESS']
-    print(addr)
-    query = {"geometry": SON([("$nearSphere", ptAddr['geometry']), ("$maxDistance", 100)])}
+    pt=(ptAddr['geometry']['y'],ptAddr['geometry']['x'])
+    po=getPostal(addr)
+    query = {"geometry": SON([("$nearSphere", ptAddr['geometry']), ("$maxDistance", 1)])}
     for doc in db['PostalCode'].find(query).limit(3):
-        pprint.pprint(doc)
+        #print(doc)
+        pt2=(doc['geometry']['coordinates'][1],doc['geometry']['coordinates'][0])
+        accurate=distance.great_circle(pt, pt2).m
+        
+        po2=doc["properties"]["PostalCode"]
+        #pprint.pprint(po2)
+        m=checkMatchLevel(po,po2)
+        print('first {} letters match, distance={}.'.format(m,accurate))
