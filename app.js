@@ -1,14 +1,32 @@
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
-const findDocuments = function(db, callback) {
+function findDocumentsSP(db, callback) {
   // Get the documents collection
-  const collection = db.collection('Address');
+  const collection = db.collection('Addess');
   // Find some documents
-  collection.find({}).toArray(function(err, docs) {
-	assert.equal(err, null);
-	console.log("Found the following records");
-	console.log(docs)
-	callback(docs);
+  collection.find(
+	{ 'geometry':
+	  { $nearSphere :
+	    { $geometry:
+	      { type: "Point",  coordinates: [ -81.20882944910463, 42.765949307742005 ] },
+	        $maxDistance: 1
+	    }
+	  }
+	}
+  ).toArray(function(err, docs) {
+    assert.equal(err, null);
+    console.log("Found the following records");
+    console.log(docs);
+    callback(docs);
+  });      
+}
+var findDocuments = function(db,qry,srt, callback) {
+  var collection = db.collection( 'Address' );
+  collection.find(qry).sort(srt).toArray(function(err, docs) {
+      assert.equal(err, null);
+      console.log("Found the following records");
+      console.log(docs)
+      callback(docs);
   });
 }
 // Connection URL
@@ -26,17 +44,9 @@ client.connect(function(err) {
   console.log("Connected successfully to server");
 
   const db = client.db(dbName);
-
-  findDocuments2(db, function() {
+qry={ 'attributes.ADDRESS' : '80-92 Confederation Dr, St Thomas, Ontario, N5P 3Y2' };
+srt={ 'attributes.FID': -1 }
+  findDocuments(db,qry,srt, function() {
     client.close();
   });
 });
-var findDocuments2 = function(db, callback) {
-  var collection = db.collection( 'Address' );
-  collection.find({ 'attributes.ADDRESS' : '39316-40298 Bush Line, St Thomas, Ontario, N5P 3S9' }).sort({ 'Accuracy': 1 }).toArray(function(err, docs) {
-      assert.equal(err, null);
-      console.log("Found the following records");
-      console.log(docs)
-      callback(docs);
-  });
-}
